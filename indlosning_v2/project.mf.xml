@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="Manifest.mf.xsd">
+<application name="indlosning_v2">
+<meta key="author">AppSpace sample</meta>
+<meta key="version">1.1</meta>
+<meta key="license user">Haris Jasarevic</meta>
+<meta key="license company">Brynild Gruppen Norway</meta>
+<meta key="licensed">false</meta>
+<meta key="priority">low</meta>
+<meta key="copy-protected">false</meta>
+<meta key="read-protected">false</meta>
+<meta key="company-key">10001;1d96e018991a5d5d4bd406e096ffa4836426946f483c766c1d4ac2b6093817e7bab37d6217e5af709d2814cfb62bcfc0734a5426f81239c971e6515e6c4af985</meta>
+<meta key="tags">InspectorP,SIM4000,Image,Algorithm,Filter,Analysis</meta>
+<entry path="scripts" default="Calibration.lua">
+<file type="text/x-lua">Calibration.lua</file>
+<file type="text/x-lua">LaserPlacment.lua</file>
+<file type="text/x-lua">Main.lua</file>
+</entry>
+<crown name="BlobFeatureTypes">
+<desc>user script</desc>
+<serves/>
+</crown>
+<hash>MJZ9qZtvwR03VcAM5GOUOGLS3LfpxzuTMRhGRZWWgbCEeBBBX1Hj/B+m7eRP8qUgXbEDm14YreK4Lu/JudbTZQ==</hash>
+</application>
+</manifest>
+ 
