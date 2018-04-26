@@ -1,65 +1,62 @@
 
--------------------- BO18-G14  Calibration ------------------------------------
----
+-------------------- BO18-G14 box counting based on size ------------------------------------
 --
--- Main sample for counting boxes based on the detected areal / size and height placement.
+--  Application for counting boxes based on the detected areal / dimension of each box in correlation with the
+-- calibrated heigh for each level. Each box is marked with a black outlined square on a mat surface
 --
---
+-- Developed by Melvin L and Mathias G.
 
 
-
-
---Start of Global Scope--------------------------------------------------------
-
+-- Declaration for different colored squares to visualy idenify the boxes from each level to end user.
 local Level1 = View.ShapeDecoration.create()
-Level1:setLineColor(0,0,255)
-Level1:setLineWidth(4)           -- Blue
+Level1:setLineColor(255,0,127)
+Level1:setLineWidth(4)           -- Wine Red
 
 local Level2 = View.ShapeDecoration.create()
-Level2:setLineColor(255,0,0)
-Level2:setLineWidth(4)            -- Red
+Level2:setLineColor(255,0,255)
+Level2:setLineWidth(4)            -- Pink
 
 local Level3 = View.ShapeDecoration.create()
-Level3:setLineColor(0,255,0)
-Level3:setLineWidth(4)             -- Green
+Level3:setLineColor(127,0,255)
+Level3:setLineWidth(4)             -- Purple
 
 local Level4 = View.ShapeDecoration.create()
-Level4:setLineColor(255,255,0)
-Level4:setLineWidth(4)             -- Yellow
+Level4:setLineColor(0,0,255)
+Level4:setLineWidth(4)             -- Blue
 
 local Level5 = View.ShapeDecoration.create()
-Level5:setLineColor(255,128,0)
-Level5:setLineWidth(4)             -- Orange
+Level5:setLineColor(0,255,255)
+Level5:setLineWidth(4)             -- Light Blue
 
 local Level6 = View.ShapeDecoration.create()
-Level6:setLineColor(128,0,128)
-Level6:setLineWidth(4)             -- Purple
+Level6:setLineColor(0,255,0)
+Level6:setLineWidth(4)             -- Green
 
 local Level7 = View.ShapeDecoration.create()
-Level7:setLineColor(128,64,0)
-Level7:setLineWidth(4)             -- Brown
+Level7:setLineColor(128,255,0)
+Level7:setLineWidth(4)             -- Light Green
 
 local Level8 = View.ShapeDecoration.create()
-Level8:setLineColor(255,0,128)
-Level8:setLineWidth(4)             -- Pink
+Level8:setLineColor(255,255,0)
+Level8:setLineWidth(4)            -- Yellow
 
 local Level9 = View.ShapeDecoration.create()
-Level9:setLineColor(255,255,255)
-Level9:setLineWidth(4)             -- White
+Level9:setLineColor(255,128,0)
+Level9:setLineWidth(4)             -- Orange
 
 local Level10 = View.ShapeDecoration.create()
-Level10:setLineColor(0,0,0)
-Level10:setLineWidth(4)             -- Black
+Level10:setLineColor(255,0,0)
+Level10:setLineWidth(4)             -- Red
+
+local ResultTextVisual = View.ShapeDecoration.create()
+ResultTextVisual:setLineColor(0,255,0)        -- Green
 
 local ResultText = Text.create()
 
---Decleration of global varibals necessery for calucaltion
-local Level1Offset,Level2Offset,Level3Offset,Level4Offset,Level5Offset
-local BaseLevel1Height,BaseLevel2Height,BaseLevel3Height,BaseLevel4Height,BaseLevel5Height
-local Level1Blobs,Level2Blobs,Level3Blobs,Level4Blobs,Level5Blobs,Level6Blobs,Level7Blobs
-local Level8Blobs,Level9Blobs,Level10Blobs,BaseHeightMin,BaseHeightMax
-
--- Defination of the "view" interface for end-user
+--Global variables needed
+local Level1Offset,Level2Offset,Level3Offset,Level4Offset,Level5Offset,Level6Offset,Level7Offset,Level8Offset,Level9Offset,Level10Offset
+local Level1Blobs,Level2Blobs,Level3Blobs,Level4Blobs,Level5Blobs,Level6Blobs,Level7Blobs,Level8Blobs,Level9Blobs,Level10Blobs
+local BaseHeightMin,BaseHeightMax
 local viewer = View.create()
 
 -- Create and configure camera
@@ -67,60 +64,56 @@ camera = Image.Provider.Camera.create()
 
 config = Image.Provider.Camera.V2DConfig.create()
 config:setBurstLength(0)     -- Continuous acquisition
-config:setFrameRate(1)      -- Hz
-config:setShutterTime(1000)   -- us
+config:setFrameRate(1)      -- Framerate in Hz
+config:setShutterTime(800)   -- Shutter time in us 
+config:setIntLight("OFF") -- Turn of the built in LED light (Currently out of order)
 
 camera:setConfig(config)
 -------------------------------------
 
---End of Global Scope----------------------------------------------------------- 
-
-
---Start of Function and Event Scope---------------------------------------------
-
--- Snap photo for processing. 
+-- Main function / start
 local function main()
+
+   -- Enable the on-board camera and take a snapshot
   camera:enable()
+  
   print("Snapping photo.")
   camera:snapshot()
-  print("App finished.")
 end
 
 
- -- Function trigged trought camera snapshot event
+ -- Function trigged after camera snapshot event
 function processImage(im, sensorData)
 
-  --Set image to view for user
+  --Push the raw  image to the end-user 
   viewer:view(im)
   local img = im
   
-  -- Binarize image for data-extraction 
-  img = img:binarize(7,33)
-
+  -- Set image data threshold
+  img = img:binarize(6,33)
+  
   -- Display binarized image
   viewer:add(img)
   
 
-  BaseMargin = 1.7
+  BaseMargin = 0.9
  
-  BaseLevel1Height = 59
-  BaseLevel2Height = 64
-  BaseLevel3Height = 68
-  BaseLevel4Height = 73
-  BaseLevel5Height = 77
- 
- -- Set's pre-calibrated box dimensions
-  BaseHeightMax = 59 + BaseMargin
-  BaseHeightMin = 59 - BaseMargin
+ -- Set pre-calibrated box dimensions
+  BaseHeightMax = 62.75 + BaseMargin
+  BaseHeightMin = 62.75 - BaseMargin
   
-  
---Resets local variables for box counting
   Level1Offset = BaseHeightMax/BaseHeightMax
-  Level2Offset = 1.08
-  Level3Offset = 1.15
-  Level4Offset = 1.24
-  Level5Offset = 1.32
+  Level2Offset = 1.04
+  Level3Offset = 1.08
+  Level4Offset = 1.12
+  Level5Offset = 1.17
+  Level6Offset = 1.22
+  Level7Offset = 1.28
+  Level8Offset = 1.34
+  Level9Offset = 1.41
+  Level10Offset = 1.49
   
+  --Reset local variables for box counting
   Level1Blobs = 0
   Level2Blobs = 0 
   Level3Blobs = 0
@@ -132,28 +125,25 @@ function processImage(im, sensorData)
   Level9Blobs = 0
   Level10Blobs = 0
   
-  antallesker = 0
+  BoxCount = 0
 
   
   
-  -- Finding blobs / box
+  -- Locate blobs / objects in the picture. 
   local objectRegion = img:threshold(0,150)
   local blobs = objectRegion:findConnected(100)
   
-  -- Analyzing each blob and visualizing the result  
+  -- Analyzing each blob
   for i = 1, #blobs do
     
-    --Locate features / blobs
+    --Extract features from blobs
     local feature = Image.PixelRegion.getElongation(blobs[i],img)
     local box = Image.PixelRegion.getBoundingBoxOriented(blobs[i],img)
     local center, width, height, rotation = box:getRectangleParameters()
     
-    -- If the blob dimension qulaifies as a square box
-    if width/height > 0.85 and width/height < 1.15 then
-    
-    --For debug
-    print("We found box")
-    print(height)
+    -- If the blob dimension qualifies as a square 
+    if width/height > 0.75 and width/height < 1.25 then
+   
     
     --Identify level 1 blobs
     if height<BaseHeightMax and height>BaseHeightMin then 
@@ -161,17 +151,15 @@ function processImage(im, sensorData)
       Level1Blobs = Level1Blobs + 1
     end
     
+   
     --Identify level 2 blobs
     if height<(BaseHeightMax*Level2Offset) and height>(BaseHeightMin*Level2Offset) then 
       viewer:add(box,Level2)
       Level2Blobs = Level2Blobs + 1
     end
    
-    print("---Level 3 ---- " .. Level3Offset)
-    print("om " .. height.. " < " .. BaseHeightMax * Level3Offset)
-    print("om " .. height.. " > " .. BaseHeightMin * Level3Offset)
-    
-   --Identify level 3 blobs
+
+    --Identify level 3 blobs
     if height<(BaseHeightMax*Level3Offset) and height>(BaseHeightMin*Level3Offset) then
       viewer:add(box,Level3)
       Level3Blobs = Level3Blobs + 1
@@ -188,10 +176,44 @@ function processImage(im, sensorData)
       viewer:add(box,Level5)
       Level5Blobs = Level5Blobs + 1
     end
-   
     
-     --Calculate amount of boxses found
-     antallesker = (Level10Blobs * 10) + (Level9Blobs * 9) + (Level8Blobs * 8) + (Level7Blobs * 7) + (Level6Blobs * 6) + (Level5Blobs * 5) + (Level4Blobs * 4) + (Level3Blobs * 3) + (Level2Blobs * 2) + (Level1Blobs * 1)
+     --Identify level 6 blobs
+    if height<(BaseHeightMax*Level6Offset) and height>(BaseHeightMin*Level6Offset) then
+      viewer:add(box,Level6)
+      Level6Blobs = Level6Blobs + 1
+    end
+    
+     --Identify level 7 blobs
+    if height<(BaseHeightMax*Level7Offset) and height>(BaseHeightMin*Level7Offset) then
+      viewer:add(box,Level7)
+      Level7Blobs = Level7Blobs + 1
+    end
+    
+    
+     --Identify level 8 blobs
+    if height<(BaseHeightMax*Level8Offset) and height>(BaseHeightMin*Level8Offset) then
+      viewer:add(box,Level8)
+      Level8Blobs = Level8Blobs + 1
+    end
+
+     --Identify level 9 blobs
+    if height<(BaseHeightMax*Level9Offset) and height>(BaseHeightMin*Level9Offset) then
+      viewer:add(box,Level9)
+      Level9Blobs = Level9Blobs + 1
+    end
+   
+  
+     --Identify level 10 blobs
+    if height<(BaseHeightMax*Level10Offset) and height>(BaseHeightMin*Level10Offset) then
+      viewer:add(box,Level10)
+      Level10Blobs = Level10Blobs + 1
+    end
+  end
+  
+   --Calculate amount of boxses found on each level
+     BoxCount = (Level10Blobs * 10) + (Level9Blobs * 9) + (Level8Blobs * 8) + (Level7Blobs * 7) + (Level6Blobs * 6) + (Level5Blobs * 5) + (Level4Blobs * 4) + (Level3Blobs * 3) + (Level2Blobs * 2) + (Level1Blobs * 1)
+     
+   -- Mainly for debug / calibration purposes   
      print("Antall level 1 " , Level1Blobs)
      print("Antall level 2 " , Level2Blobs)
      print("Antall level 3 " , Level3Blobs)
@@ -202,23 +224,29 @@ function processImage(im, sensorData)
      print("Antall level 8 " , Level8Blobs)
      print("Antall level 9 " , Level9Blobs)
      print("Antall level 10 " , Level10Blobs)
-     print("Vi fant " , antallesker , " esker")
+     print("Vi fant " , BoxCount , " esker")
      
-     ResultText:setText("Antall esker = "..antallesker)
+     
+  -- Prepare result to end user
+     ResultText:setText("Antall esker = "..BoxCount)
      ResultText:setPosition(30,30)
      Text.setSize(ResultText, 50)
-     viewer:add(ResultText, textDecoration)
+     viewer:add(ResultText, ResultTextVisual)
+     
     end
     
     
-  end
   --Display results  
   viewer:present()
   
+  Script.sleep(5000)
+  
+  
+  print("Snapping photo.")
+  camera:snapshot()
 end
 
 --Trigger events for main and camera snapshot
 Script.register("Engine.OnStarted", main)
 camera:register("OnNewImage", processImage)
 
---End of Function and Event Scope-------------------------------------------------- 
